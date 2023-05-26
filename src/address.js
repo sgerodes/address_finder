@@ -58,16 +58,20 @@ function countOccurrences(string) {
     }
 }
 
+const COUNT_THRESHOLD = 10000;
+const OCCURRENCES_THRESHOLD = 2;
+
 function checkAddressForWords(lowercaseWordsSet) {
     let count = 0;
     let startTime = new Date();
     while (true) {
         count += 1;
-        if (count % 10000 == 0) {
+        if (count % COUNT_THRESHOLD == 0) {
             let currentTime = new Date();
             let elapsedTime = (currentTime - startTime) / 1000;
-            let throughput = count / elapsedTime;
+            let throughput = COUNT_THRESHOLD / elapsedTime;
             console.log(`count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
+            startTime = new Date();
         }
         const wallet = createWallet();
         const { address, privateKey, mnemonic } = wallet;
@@ -77,7 +81,7 @@ function checkAddressForWords(lowercaseWordsSet) {
             continue
         }
         const occurrences = countOccurrences(address)
-        if (occurrences >= 2) {
+        if (occurrences >= OCCURRENCES_THRESHOLD) {
             console.log(`${startsWith?'startsWith, ':''}${endsWith?'endsWith, ':''}b0b x ${occurrences}, Address: ${address}, Private Key: ${privateKey}, Mnemonic: ${mnemonic}`);
         }
 
