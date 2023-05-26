@@ -21,9 +21,6 @@ function createWallet() {
     };
 }
 
-
-
-
 async function readWordsFromFile(inputPath) {
     const fileStream = fs.createReadStream(inputPath);
     const rl = readline.createInterface({
@@ -62,7 +59,16 @@ function countOccurrences(string) {
 }
 
 function checkAddressForWords(lowercaseWordsSet) {
+    let count = 0;
+    let startTime = new Date();
     while (true) {
+        count += 1;
+        if (count % 10000 == 0) {
+            let currentTime = new Date();
+            let elapsedTime = (currentTime - startTime) / 1000;
+            let throughput = count / elapsedTime;
+            console.log(`count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
+        }
         const wallet = createWallet();
         const { address, privateKey, mnemonic } = wallet;
         const startsWith = address.substring(2).startsWith('b0b')
