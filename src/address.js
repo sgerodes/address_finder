@@ -14,8 +14,8 @@ if (!fs.existsSync(folderName)){
 }
 
 const NUM_CHAR_IN_ROW = 7;
-const NUM_CHAR_IN_ROW_STARTS = 5;
-const STARTS_AND_END_IN_A_ROW = 3;
+const NUM_CHAR_IN_ROW_STARTS = 6;
+const STARTS_AND_END_IN_A_ROW = 4;
 const COUNT_THRESHOLD = 10000;
 const OCCURRENCES_THRESHOLD = 4;
 const FILE_TO_WRITE = `${folderName}bobs.txt`;
