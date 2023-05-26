@@ -8,14 +8,14 @@ const readline = require('readline');
 
 const processName = process.argv[2];
 console.log(`Process name: ${processName}`);
-const folderName = "data/" + (processName ?  + processName + "/" : "default/");
+const folderName = "data/" + (processName ?  processName + "/" : "default/");
 if (!fs.existsSync(folderName)){
     fs.mkdirSync(folderName, { recursive: true });
 }
 
 const NUM_CHAR_IN_ROW = 7;
 const NUM_CHAR_IN_ROW_STARTS = 5;
-const COUNT_THRESHOLD = 100;
+const COUNT_THRESHOLD = 10000;
 const OCCURRENCES_THRESHOLD = 4;
 const FILE_TO_WRITE = `${folderName}bobs.txt`;
 const PERFORMANCE_FILE = `${folderName}performance.txt`;
