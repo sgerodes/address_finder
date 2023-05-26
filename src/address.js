@@ -6,19 +6,26 @@ const fs = require('fs');
 const readline = require('readline');
 
 
+const processName = process.argv[2];
+console.log(`Process name: ${processName}`);
+const folderName = "data/" + (processName ?  + processName + "/" : "default/");
+if (!fs.existsSync(folderName)){
+    fs.mkdirSync(folderName, { recursive: true });
+}
+
 const NUM_CHAR_IN_ROW = 7;
 const NUM_CHAR_IN_ROW_STARTS = 5;
-const COUNT_THRESHOLD = 10000;
+const COUNT_THRESHOLD = 100;
 const OCCURRENCES_THRESHOLD = 4;
-const FILE_TO_WRITE = 'bobs.txt';
-const PERFORMANCE_FILE = 'performance.txt';
+const FILE_TO_WRITE = `${folderName}bobs.txt`;
+const PERFORMANCE_FILE = `${folderName}performance.txt`;
 
 var regex_contains = new RegExp(`(\\w)\\1{${NUM_CHAR_IN_ROW - 1}}`);
 var regex_starts = new RegExp(`^(\\w)\\1{${NUM_CHAR_IN_ROW_STARTS - 1}}`);
 
 
 //const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'face', 'ace', 'bad', 'ba0bab', 'caca0', 'c0ffee', 'dec0de', 'f00d']
-const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'ba0bab', 'caca0', 'c0ffee', 'dec0de']
+const starters = ['decaff', 'facade', 'decaf', 'ba0bab', 'caca0', 'c0ffee', 'dec0de']
 const starters2 = ['b0bbeef', 'b0bdecaff', 'b0bfacade', 'b0bdecaf', 'b0bcafe',
     'b0bface', 'b0bace', 'aceb0b', 'b0bbad', 'badb0b', 'caca0b0b', 'c0ffeeb0b',
     'b0bc0ffee', 'b0bdec0de', 'b0bf00d', 'b0b0b', 'b0bb0b']
@@ -66,6 +73,33 @@ function writeWordsToFile(words, outputPath) {
     });
 }
 
+function maxCharInRow(s) {
+    if (s.length === 0) return 0;
+
+    let maxCount = 0;
+    let currentCount = 1;
+    let currentChar = s[0];
+
+    for (let i = 1; i < s.length; i++) {
+        if (s[i] === currentChar) {
+            currentCount++;
+        } else {
+            if (currentCount > maxCount) {
+                maxCount = currentCount;
+            }
+            currentChar = s[i];
+            currentCount = 1;
+        }
+    }
+
+    // check for the case where the maximum sequence ends at the end of the string
+    if (currentCount > maxCount) {
+        maxCount = currentCount;
+    }
+
+    return maxCount;
+}
+
 function appendToFile(filePath, str) {
     fs.appendFileSync(filePath, str + '\n', (err) => {
         if (err) throw err;
@@ -106,11 +140,13 @@ function isInteresting(address_blank) {
         return true;
     }
     if (regex_contains.test(address_blank)) {
-        logAndAppend(FILE_TO_WRITE, `Contains ${NUM_CHAR_IN_ROW} of the same character in a row`)
+        const count = maxCharInRow(address_blank);
+        logAndAppend(FILE_TO_WRITE, `Contains ${count} of the same character in a row`);
         return true;
     }
     if (regex_starts.test(address_blank)) {
-        logAndAppend(FILE_TO_WRITE, `Starts with ${NUM_CHAR_IN_ROW_STARTS} of the same character in a row`)
+        const count = maxCharInRow(address_blank);
+        logAndAppend(FILE_TO_WRITE, `Starts with ${count} of the same character in a row`)
         return true;
     }
     return false;
