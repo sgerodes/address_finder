@@ -5,17 +5,38 @@ const hdkey = require('ethereumjs-wallet').hdkey;
 const fs = require('fs');
 const readline = require('readline');
 
+
+const NUM_CHAR_IN_ROW = 7;
+const NUM_CHAR_IN_ROW_STARTS = 5;
+const COUNT_THRESHOLD = 1000;
+const OCCURRENCES_THRESHOLD = 4;
+const FILE_TO_WRITE = 'bobs.txt';
+const PERFORMANCE_FILE = 'performance.txt';
+
+var regex_contains = new RegExp(`(\\w)\\1{${NUM_CHAR_IN_ROW - 1}}`);
+var regex_starts = new RegExp(`^(\\w)\\1{${NUM_CHAR_IN_ROW_STARTS - 1}}`);
+
+
+//const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'face', 'ace', 'bad', 'ba0bab', 'caca0', 'c0ffee', 'dec0de', 'f00d']
+const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'ba0bab', 'caca0', 'c0ffee', 'dec0de']
+const starters2 = ['b0bbeef', 'b0bdecaff', 'b0bfacade', 'b0bdecaf', 'b0bcafe',
+    'b0bface', 'b0bace', 'aceb0b', 'b0bbad', 'badb0b', 'caca0b0b', 'c0ffeeb0b',
+    'b0bc0ffee', 'b0bdec0de', 'b0bf00d', 'b0b0b', 'b0bb0b']
+const starters_all = starters.concat(starters2);
+
+
 function createWallet() {
     const mnemonic = bip39.generateMnemonic();
     const seed = bip39.mnemonicToSeedSync(mnemonic);
 
     const hdWallet = hdkey.fromMasterSeed(seed);
     const wallet = hdWallet.derivePath("m/44'/60'/0'/0/0").getWallet();
-    const address = `0x${wallet.getAddress().toString('hex')}`;
+    //const address = `0x${wallet.getAddress().toString('hex')}`;
+    const address_blank = wallet.getAddress().toString('hex');
     const privateKey = wallet.getPrivateKeyString();
 
     return {
-        address: address,
+        address_blank: address_blank,
         privateKey: privateKey,
         mnemonic: mnemonic
     };
@@ -45,6 +66,16 @@ function writeWordsToFile(words, outputPath) {
     });
 }
 
+function appendToFile(filePath, str) {
+    fs.appendFileSync(filePath, str + '\n', (err) => {
+        if (err) throw err;
+    });
+}
+
+function logAndAppend(filePath, str) {
+    console.log(str);
+    appendToFile(filePath, str)
+}
 
 
 function countOccurrences(string) {
@@ -58,10 +89,35 @@ function countOccurrences(string) {
     }
 }
 
-const COUNT_THRESHOLD = 10000;
-const OCCURRENCES_THRESHOLD = 2;
 
-function checkAddressForWords(lowercaseWordsSet) {
+function isInteresting(address_blank) {
+    if (address_blank.startsWith('b0b') && address_blank.endsWith('b0b')) {
+        logAndAppend(FILE_TO_WRITE, 'Starts and ends with b0b')
+        return true;
+    }
+    for (const starter of starters_all) {
+        if (address_blank.startsWith(starter) || address_blank.endsWith(starter)) {
+            logAndAppend(FILE_TO_WRITE, `Starts or ends with ${starter}`)
+            return true;
+        }
+    }
+    if (countOccurrences(address_blank) >= OCCURRENCES_THRESHOLD) {
+        logAndAppend(FILE_TO_WRITE, `Contains b0b at least ${OCCURRENCES_THRESHOLD} times`)
+        return true;
+    }
+    if (regex_contains.test(address_blank)) {
+        logAndAppend(FILE_TO_WRITE, `Contains ${NUM_CHAR_IN_ROW} of the same character in a row`)
+        return true;
+    }
+    if (regex_starts.test(address_blank)) {
+        logAndAppend(FILE_TO_WRITE, `Starts with ${NUM_CHAR_IN_ROW_STARTS} of the same character in a row`)
+        return true;
+    }
+    return false;
+}
+
+
+function checkAddressForWords() {
     let count = 0;
     let startTime = new Date();
     while (true) {
@@ -70,36 +126,24 @@ function checkAddressForWords(lowercaseWordsSet) {
             let currentTime = new Date();
             let elapsedTime = (currentTime - startTime) / 1000;
             let throughput = COUNT_THRESHOLD / elapsedTime;
-            console.log(`count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
+            logAndAppend(PERFORMANCE_FILE, `count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
             startTime = new Date();
         }
         const wallet = createWallet();
-        const { address, privateKey, mnemonic } = wallet;
-        const startsWith = address.substring(2).startsWith('b0b')
-        const endsWith = address.endsWith('b0b')
-        if (!startsWith && !endsWith) {
-            continue
-        }
-        const occurrences = countOccurrences(address)
-        if (occurrences >= OCCURRENCES_THRESHOLD) {
-            console.log(`${startsWith?'startsWith, ':''}${endsWith?'endsWith, ':''}b0b x ${occurrences}, Address: ${address}, Private Key: ${privateKey}, Mnemonic: ${mnemonic}`);
+        const { address_blank, privateKey, mnemonic } = wallet;
+
+        if (isInteresting(address_blank)) {
+            logAndAppend(FILE_TO_WRITE, `Address: ${address_blank}, Private Key: ${privateKey}, Mnemonic: ${mnemonic}`)
         }
 
-        // for (const word of lowercaseWordsSet) {
-        //
-        //     //if (address.includes(word)) {
-        //     if (address.includes('b0b')) {
-        //         console.log(`word: ${word}, Address: ${address}, Private Key: ${privateKey}, Mnemonic: ${mnemonic}`);
-        //     }
-        // }
     }
 }
 
 async function main() {
-    const words = await readWordsFromFile('public/all.txt');
-    const lowercaseWordsSet = new Set(words.map(word => word.toLowerCase()).filter(word => word.length > 4));
+    //const words = await readWordsFromFile('public/all.txt');
+    //const lowercaseWordsSet = new Set(words.map(word => word.toLowerCase()).filter(word => word.length > 4));
     //console.log(lowercaseWordsSet);
-    checkAddressForWords(lowercaseWordsSet);
+    checkAddressForWords();
 }
 
 
