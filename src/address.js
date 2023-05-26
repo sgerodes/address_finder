@@ -8,7 +8,7 @@ const readline = require('readline');
 
 const NUM_CHAR_IN_ROW = 7;
 const NUM_CHAR_IN_ROW_STARTS = 5;
-const COUNT_THRESHOLD = 1000;
+const COUNT_THRESHOLD = 10000;
 const OCCURRENCES_THRESHOLD = 4;
 const FILE_TO_WRITE = 'bobs.txt';
 const PERFORMANCE_FILE = 'performance.txt';
