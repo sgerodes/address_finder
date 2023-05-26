@@ -15,6 +15,7 @@ if (!fs.existsSync(folderName)){
 
 const NUM_CHAR_IN_ROW = 7;
 const NUM_CHAR_IN_ROW_STARTS = 5;
+const STARTS_AND_END_IN_A_ROW = 3;
 const COUNT_THRESHOLD = 10000;
 const OCCURRENCES_THRESHOLD = 4;
 const FILE_TO_WRITE = `${folderName}bobs.txt`;
@@ -22,6 +23,7 @@ const PERFORMANCE_FILE = `${folderName}performance.txt`;
 
 var regex_contains = new RegExp(`(\\w)\\1{${NUM_CHAR_IN_ROW - 1}}`);
 var regex_starts = new RegExp(`^(\\w)\\1{${NUM_CHAR_IN_ROW_STARTS - 1}}`);
+var regex_starts_ends = new RegExp(`^(.)\\1{${STARTS_AND_END_IN_A_ROW-1}}.*?(.)\\2{${STARTS_AND_END_IN_A_ROW - 1}}$`);
 
 
 //const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'face', 'ace', 'bad', 'ba0bab', 'caca0', 'c0ffee', 'dec0de', 'f00d']
@@ -147,6 +149,11 @@ function isInteresting(address_blank) {
     if (regex_starts.test(address_blank)) {
         const count = maxCharInRow(address_blank);
         logAndAppend(FILE_TO_WRITE, `Starts with ${count} of the same character in a row`)
+        return true;
+    }
+    if (regex_starts_ends.test(address_blank)) {
+        const count = maxCharInRow(address_blank);
+        logAndAppend(FILE_TO_WRITE, `Starts and ends with repeating chars. Max ${count} of the same character in a row`)
         return true;
     }
     return false;
