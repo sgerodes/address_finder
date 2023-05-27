@@ -27,7 +27,7 @@ var regex_starts_ends = new RegExp(`^(.)\\1{${STARTS_AND_END_IN_A_ROW-1}}.*?(.)\
 
 
 //const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'face', 'ace', 'bad', 'ba0bab', 'caca0', 'c0ffee', 'dec0de', 'f00d']
-const starters = ['decaff', 'facade', 'decaf', 'ba0bab', 'caca0', 'c0ffee', 'dec0de',
+const starters = ['decaff', 'facade', 'ba0bab', 'c0ffee', 'dec0de',
     '01234567', '12345678', 'abcdef', 'fedcba', '98765432', 'fedcba']
 const starters2 = ['b0bbeef', 'b0bdecaff', 'b0bfacade', 'b0bdecaf', 'b0bcafe',
     'b0bface', 'b0bace', 'aceb0b', 'b0bbad', 'badb0b', 'caca0b0b', 'c0ffeeb0b',
@@ -142,9 +142,9 @@ function isInteresting(address_blank) {
         logAndAppend(FILE_TO_WRITE, `Contains b0b at least ${OCCURRENCES_THRESHOLD} times`)
         return true;
     }
-    if (regex_contains.test(address_blank)) {
+    if (regex_starts_ends.test(address_blank)) {
         const count = maxCharInRow(address_blank);
-        logAndAppend(FILE_TO_WRITE, `Contains ${count} of the same character in a row`);
+        logAndAppend(FILE_TO_WRITE, `Starts and ends with repeating chars. Max ${count} of the same character in a row`)
         return true;
     }
     if (regex_starts.test(address_blank)) {
@@ -152,9 +152,9 @@ function isInteresting(address_blank) {
         logAndAppend(FILE_TO_WRITE, `Starts with ${count} of the same character in a row`)
         return true;
     }
-    if (regex_starts_ends.test(address_blank)) {
+    if (regex_contains.test(address_blank)) {
         const count = maxCharInRow(address_blank);
-        logAndAppend(FILE_TO_WRITE, `Starts and ends with repeating chars. Max ${count} of the same character in a row`)
+        logAndAppend(FILE_TO_WRITE, `Contains ${count} of the same character in a row`);
         return true;
     }
     return false;

@@ -24,6 +24,8 @@ with open('./data/bobs_sorted.txt', 'w') as bobs_sorted_file:
     for cause, addresses in bob_cause_2_address.items():
         for a in addresses:
             bobs_sorted_file.write(f'{cause}\n{a}\n')
+        bobs_sorted_file.write('\n')
     for cause, addresses in cause_2_address.items():
         for a in addresses:
             bobs_sorted_file.write(f'{cause}\n{a}\n')
+        bobs_sorted_file.write('\n')
