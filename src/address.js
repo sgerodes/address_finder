@@ -17,17 +17,18 @@ const NUM_CHAR_IN_ROW = 7;
 const NUM_CHAR_IN_ROW_STARTS = 6;
 const STARTS_AND_END_IN_A_ROW = 4;
 const COUNT_THRESHOLD = 10000;
-const OCCURRENCES_THRESHOLD = 4;
+const OCCURRENCES_THRESHOLD = 3;
 const FILE_TO_WRITE = `${folderName}bobs.txt`;
 const PERFORMANCE_FILE = `${folderName}performance.txt`;
 
-var regex_contains = new RegExp(`(\\w)\\1{${NUM_CHAR_IN_ROW - 1}}`);
-var regex_starts = new RegExp(`^(\\w)\\1{${NUM_CHAR_IN_ROW_STARTS - 1}}`);
-var regex_starts_ends = new RegExp(`^(.)\\1{${STARTS_AND_END_IN_A_ROW-1}}.*?(.)\\2{${STARTS_AND_END_IN_A_ROW - 1}}$`);
+const regex_contains = new RegExp(`(\\w)\\1{${NUM_CHAR_IN_ROW - 1}}`);
+const regex_starts = new RegExp(`^(\\w)\\1{${NUM_CHAR_IN_ROW_STARTS - 1}}`);
+const regex_starts_ends = new RegExp(`^(.)\\1{${STARTS_AND_END_IN_A_ROW-1}}.*?(.)\\2{${STARTS_AND_END_IN_A_ROW - 1}}$`);
+const regex_starts_ends_metamask = new RegExp("^(.)\\1{2}.*?(.)\\2{3}$");
 
 
 //const starters = ['beef', 'decaff', 'facade', 'decaf', 'cafe', 'face', 'ace', 'bad', 'ba0bab', 'caca0', 'c0ffee', 'dec0de', 'f00d']
-const starters = ['decaff', 'facade', 'c0ffee', 'dec0de', '0123456', '1234567', 'abcdef', '9876543', 'decafc0ffee', 'caca0c0ffee', 'c0ffeecaca0']
+const starters = ['decaff', 'facade', 'c0ffee', 'dec0de', '0123456', '1234567', 'abcdef', '9876543', '7654321', 'decafc0ffee', 'caca0c0ffee', 'c0ffeecaca0']
 const starters2 = [];
 // const starters2 = ['b0bbeef', 'b0bdecaff', 'b0bfacade', 'b0bdecaf', 'b0bcafe', 'b0bface', 'b0bace', 'aceb0b', 'b0bbad', 'badb0b', 'caca0b0b', 'c0ffeeb0b', 'b0bc0ffee', 'b0bdec0de', 'b0bf00d', 'b0b0b', 'b0bb0b']
 const starters_all = starters.concat(starters2);
@@ -131,8 +132,12 @@ function isInteresting(address_blank) {
         return true;
     }
     for (const starter of starters_all) {
-        if (address_blank.startsWith(starter) || address_blank.endsWith(starter)) {
-            logAndAppend(FILE_TO_WRITE, `Starts or ends with ${starter}`)
+        if (address_blank.startsWith(starter) ) {
+            logAndAppend(FILE_TO_WRITE, `Starts with ${starter}`)
+            return true;
+        }
+        if (address_blank.endsWith(starter)) {
+            logAndAppend(FILE_TO_WRITE, `Ends  with ${starter}`)
             return true;
         }
     }
@@ -155,6 +160,11 @@ function isInteresting(address_blank) {
         logAndAppend(FILE_TO_WRITE, `Contains ${count} of the same character in a row`);
         return true;
     }
+    if (regex_starts_ends_metamask.test(address_blank)) {
+        const count = maxCharInRow(address_blank);
+        logAndAppend(FILE_TO_WRITE, `Starts and ends metamask style. Max ${count} of the same character in a row`)
+        return true;
+    }
     return false;
 }
 
@@ -168,7 +178,8 @@ function checkAddressForWords() {
             let currentTime = new Date();
             let elapsedTime = (currentTime - startTime) / 1000;
             let throughput = COUNT_THRESHOLD / elapsedTime;
-            logAndAppend(PERFORMANCE_FILE, `count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
+            //logAndAppend(PERFORMANCE_FILE, `count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
+            console.log(`count=${count}, throughput=${throughput.toFixed(2)} addresses/sec`);
             startTime = new Date();
         }
         const wallet = createWallet();

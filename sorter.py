@@ -1,11 +1,19 @@
 from collections import defaultdict
+import os
 
 data_folders = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
 lines = []
 for folder in data_folders:
-    with open(f'./data/{folder}/bobs.txt', 'r') as bobs_file:
-        lines += bobs_file.readlines()
+    file_path = f'./data/{folder}/bobs.txt'
+    dir_path = os.path.dirname(file_path)
+
+    if os.path.exists(dir_path):
+        with open(f'./data/{folder}/bobs.txt', 'r') as bobs_file:
+            lines += bobs_file.readlines()
+        print(f'Files read from: {dir_path}')
+    else:
+        print(f'Path does not exists: {dir_path}')
 
 
 cause_2_address = defaultdict(list)
